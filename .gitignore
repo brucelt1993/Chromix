@@ -39,3 +39,6 @@ venv/
 # OS cruft
 .DS_Store
 Thumbs.db
+
+# deploy secrets
+deploy/.env

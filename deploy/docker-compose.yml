@@ -1,0 +1,55 @@
+# Chromix 多开管理器一键部署。推荐直接运行 ./deploy.sh。
+#   仅本机/SSH 隧道：docker compose up -d --build
+#   域名 + HTTPS：   docker compose --profile https up -d --build（需在 .env 设置 DOMAIN）
+name: chromix
+
+services:
+  manager:
+    build:
+      context: ..
+      dockerfile: deploy/manager.Dockerfile
+    image: chromix-manager:local
+    hostname: chromix            # 固定主机名，Chromium 的 profile 锁按主机名判断是否陈旧
+    restart: unless-stopped
+    init: true
+    environment:
+      CHROMIX_MANAGER_TOKEN: ${CHROMIX_MANAGER_TOKEN:?请在 .env 中设置 CHROMIX_MANAGER_TOKEN}
+      TZ: ${TZ:-Asia/Shanghai}
+      XVFB_RESOLUTION: ${XVFB_RESOLUTION:-1920x1080x24}
+    volumes:
+      - chromix-data:/data       # profile 配置、用户目录（登录态）、日志
+    ports:
+      # 默认只绑定宿主回环地址；直接对公网开放请把 BIND_ADDR 设为 0.0.0.0（token 将明文传输）
+      - "${BIND_ADDR:-127.0.0.1}:${MANAGER_PORT:-8820}:8820"
+    shm_size: ${SHM_SIZE:-2gb}   # 多开时 Chromium 大量使用 /dev/shm
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+      # 允许 Chromium 非特权 user-namespace sandbox，不需要 --privileged / --no-sandbox
+      - seccomp=../docker/seccomp.json
+      # Ubuntu 24.04+ 宿主限制非特权 userns 时，./deploy.sh --apparmor 会叠加 docker-compose.apparmor.yml
+    stop_grace_period: 60s       # 留时间让浏览器正常退出、Cookie 落盘
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "3"}
+
+  caddy:
+    image: caddy:2
+    profiles: [https]
+    restart: unless-stopped
+    depends_on: [manager]
+    environment:
+      DOMAIN: ${DOMAIN:-}       # deploy.sh 会在启用 https 时检查
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  chromix-data:
+  caddy-data:
+  caddy-config:

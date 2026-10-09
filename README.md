@@ -34,6 +34,7 @@ Chromix combines source-level Chromium patches with Python and Node.js SDKs. Use
 | Proxy-aware configuration | Use HTTP/HTTPS/SOCKS proxies and optionally derive locale/timezone through GeoIP | [Proxy example](#proxy-and-geoip) |
 | Rendering and media policies | Configure native GPU policy, fonts, audio and codec restrictions | [Backend policies](docs/backend-policy.md) |
 | Input helpers | Add mouse, typing and scrolling timing with `humanize` | [SDK feature details](docs/functionality-followup.md) |
+| Multi-profile manager | `python -m chromix manager` serves a local web UI: launch many isolated profiles, each with its own CDP endpoint and login state | [Manager guide (zh-CN)](docs/manager.md) |
 | Encrypted cookie transfer | Export/import cookies between explicitly selected active contexts | [Cookie migration](docs/functionality-followup.md#加密-cookie-迁移) |
 | Portable distribution | Use a release ZIP or a Linux amd64/arm64 container | [Downloads](#downloads-and-platforms), [Docker](docs/docker.md) |
 
@@ -289,6 +290,7 @@ When reporting an issue, include OS/architecture, browser version, SDK version, 
 | Use Python / async contexts | [Python SDK](sdk/python/README.md) |
 | Use Node / Playwright / Puppeteer | [Node SDK](sdk/node/README.md) |
 | Run a Linux container | [Docker](docs/docker.md) |
+| Manage many profiles from a web UI, attach over CDP | [Manager guide (zh-CN)](docs/manager.md) |
 | Look up native browser switches | [Fingerprint flags](docs/fingerprint-flags.md) |
 | Understand rendering and media behavior | [Backend policy](docs/backend-policy.md), [Canvas](docs/canvas-chain.md), [GPU](docs/gpu-backend.md) |
 | Evaluate device templates and measured records | [Device pool](docs/device-pool.md) |

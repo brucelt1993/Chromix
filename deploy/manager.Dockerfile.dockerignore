@@ -1,0 +1,6 @@
+# 构建上下文是仓库根目录，只放行镜像需要的文件
+*
+!docker/download.sh
+!sdk/python/chromix/**
+!deploy/entrypoint.sh
+**/__pycache__

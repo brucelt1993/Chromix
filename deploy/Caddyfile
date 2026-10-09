@@ -1,0 +1,6 @@
+# 自动申请 HTTPS 证书，反代管理器（含 /cdp WebSocket 网关）。
+# 访问日志默认关闭：若开启，URL 中的 ?token= 会被记录。
+{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy manager:8820
+}

@@ -34,6 +34,7 @@ Chromix 在固定版本的 Chromium、ungoogled 核心及平台层之上维护�
 | 代理感知启动 | 设置 HTTP/HTTPS/SOCKS 代理，可选 GeoIP 推导语言和时区 | [代理示例](#代理与-geoip) |
 | 图形与媒体策略 | 配置原生 GPU 策略、字体、音频及编解码限制 | [后端策略](docs/backend-policy.md) |
 | 输入动作辅助 | `humanize` 为部分鼠标、输入和滚动操作加入轨迹与时序 | [功能指南](docs/features.md) |
+| 多开管理器 | `python -m chromix manager` 打开网页管理界面：一键多开、独立 CDP 端点、各账号登录态隔离（含 Boss 直聘模板） | [管理器指南](docs/manager.md) |
 | 加密 Cookie 迁移 | 在明确选定的活动 context 之间导出、导入 Cookie | [迁移说明](docs/functionality-followup.md#加密-cookie-迁移) |
 | 跨平台分发 | 使用 ZIP 发布包，或 Linux amd64/arm64 Docker 镜像 | [下载](#下载与平台)、[Docker](docs/docker.md) |
 
@@ -287,6 +288,7 @@ python3 tools/fingerprint_smoke.py \
 | 使用 Python、异步或持久化 context | [Python SDK](sdk/python/README.md) |
 | 使用 Node、Playwright 或 Puppeteer | [Node SDK](sdk/node/README.md) |
 | 使用 Linux Docker 镜像 | [Docker 指南](docs/docker.md) |
+| 网页管理多开 profile、CDP 接入 | [管理器指南](docs/manager.md) |
 | 查找浏览器启动参数 | [指纹参数](docs/fingerprint-flags.md) |
 | 理解图形、字体、媒体策略 | [后端策略](docs/backend-policy.md)、[Canvas](docs/canvas-chain.md)、[GPU](docs/gpu-backend.md) |
 | 区分设备模板与实测数据 | [设备池](docs/device-pool.md) |

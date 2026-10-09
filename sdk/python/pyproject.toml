@@ -33,7 +33,8 @@ cookies = ["cryptography>=42"]
 chromix = "chromix.__main__:main"
 
 [tool.setuptools]
-packages = ["chromix"]
+packages = ["chromix", "chromix.manager"]
 
 [tool.setuptools.package-data]
 chromix = ["device_probe.js", "device_render_probe.js", "canvas_chain_probe.js", "render_integration_probe.js", "gpu_backend_probe.js"]
+"chromix.manager" = ["static/index.html"]

@@ -1,0 +1,6 @@
+# Ubuntu 24.04+ 宿主（kernel.apparmor_restrict_unprivileged_userns=1）使用：
+# 需先由管理员加载 docker/apparmor.profile（./deploy.sh --apparmor 会提示并执行）。
+services:
+  manager:
+    security_opt:
+      - apparmor=chromix-docker
