@@ -15,7 +15,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from chromix.manager import cdp, gateway  # noqa: E402
+from chromix.manager import cdp, fpeval, gateway  # noqa: E402
 from chromix.manager.proxy_relay import ProxyRelay, _rewrite_head  # noqa: E402
 from chromix.manager.runner import BrowserPool, build_launch, clear_stale_lock  # noqa: E402
 from chromix.manager.server import Manager, make_handler  # noqa: E402
@@ -328,6 +328,30 @@ def test_gateway_requires_running_browser_and_token(tmp_path):
     finally:
         httpd.shutdown()
         httpd.server_close()
+
+
+def _fp(seed, **over):
+    r = {"ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)", "platform": "Win32", "uaPlatform": "Windows",
+         "languages": ["zh-CN"], "timezone": "Asia/Shanghai", "webdriver": False, "hardwareConcurrency": 8,
+         "deviceMemory": 8, "screen": [1920, 1080, 1920, 1032, 24, 1], "webglRenderer": "ANGLE (NVIDIA, D3D11)",
+         "webglParamsHash": f"w{seed}", "canvasHash": f"c{seed}", "audioSum": f"a{seed}", "fonts": ["Arial", "Segoe UI"],
+         "httpHeaders": {"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                         "accept-language": "zh-CN,zh;q=0.9", "sec-ch-ua-platform": '"Windows"'}}
+    r.update(over)
+    return r
+
+
+def test_fpeval_judge_passes_coherent_distinct_profiles_and_flags_linkable_ones():
+    good = {"A": [_fp(1), _fp(1)], "B": [_fp(2, hardwareConcurrency=12), _fp(2, hardwareConcurrency=12)]}
+    assert all(c["result"] == "PASS" for c in fpeval.judge("windows", "zh-CN", "Asia/Shanghai", good))
+    mac_gpu = "ANGLE (Apple, ANGLE Metal Renderer: Apple M5)"
+    bad = {"A": [_fp(1, webglRenderer=mac_gpu, fonts=["PingFang SC"]), _fp(1, webglRenderer=mac_gpu, fonts=["PingFang SC"])],
+           "B": [_fp(1, webglRenderer=mac_gpu), _fp(1, webglRenderer=mac_gpu, timezone="UTC")]}
+    result = {c["check"]: c["result"] for c in fpeval.judge("windows", "zh-CN", "Asia/Shanghai", bad)}
+    assert result["A: GPU 与人设自洽"] == "FAIL" and result["A: 字体与人设自洽"] == "FAIL"
+    assert result["B: 重启后指纹稳定"] == "FAIL"
+    assert result["不同 profile 的设备指纹可区分（Canvas/音频）"] == "FAIL"
+    assert result["不同 profile 的硬件参数有差异（CPU/内存/屏幕）"] == "WARN"
 
 
 def test_cookie_domain_matching():

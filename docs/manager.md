@@ -135,7 +135,30 @@ git clone <你的仓库> chromix && cd chromix/deploy
 - **有界面模式**：容器内运行 Xvfb（`DISPLAY=:99`），未勾选「无头模式」的 profile 会在虚拟屏幕上以有界面方式运行。
 - **字体**：Linux 发布包只带 Windows 字体，镜像额外把 Noto CJK 加入浏览器的字体目录，否则中文显示为方块。代价是字体列表中多出一款 Windows 上没有的字体。
 - **浏览器版本**：与官方 Docker 镜像相同，amd64 使用 `v154.0.8037.97`，arm64 使用 `v154.0.8037.57`。部署后建议确认发布包包含指纹补丁：`docker compose exec manager sh -c "grep -c uxr- /opt/chromix/chrome"`，输出大于 0 才算通过。
+- **指纹验收**：部署完成后运行 `./deploy.sh fpeval`，见下文“指纹验收”。
 - **资源**：`SHM_SIZE` 默认为 2GB，多开实例较多时请调大，并留意服务器内存。
+
+## 指纹验收
+
+部署或更换浏览器版本后运行。脚本经管理器创建两个临时 profile，每个启动两次并采集指纹，结束后自动删除：
+
+```bash
+./deploy.sh fpeval                                          # Docker 部署
+python -m chromix.manager.fpeval --manager http://127.0.0.1:8820 --token <token>   # 直接运行
+```
+
+| 判定 | 失败意味着 |
+|---|---|
+| 平台人设生效 / 语言与时区生效 | 对应的启动参数没有被浏览器接受 |
+| navigator.webdriver 为 false | 页面能直接识别为自动化浏览器 |
+| JS 与 HTTP 请求头一致 | 页面 JS 读到的值和服务器收到的请求头矛盾 |
+| 重启后指纹稳定 | 同一账号每次登录看起来像不同设备 |
+| GPU、字体与人设自洽 | 例如 Windows 人设却报 Apple GPU 或 macOS 字体 |
+| 不同 profile 的设备指纹可区分 | Canvas、音频哈希相同，同一台机器上的多个账号可被关联为同一设备 |
+
+有失败项时退出码为 1；加 `--json result.json` 可保存原始数据。默认测 Windows 人设，可用 `--persona` 切换。
+
+**macOS v152.0.7977.82 的实测结果（Apple M5）**：人设、语言、时区、webdriver、重启稳定性、JS 与请求头一致性都通过；GPU 和字体与 Windows 人设矛盾；两个 profile 的 Canvas、音频哈希与关闭指纹时完全相同。另外，当前 SDK 按 v154 的开关名生成参数，v152 内核只认旧开关名，例如屏幕参数需要写成 `--uxr-screen-width`。因此 macOS 上的多个 profile 能隔离登录态，但无法避免被关联为同一设备。
 
 ## HTTP API
 

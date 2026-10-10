@@ -5,6 +5,7 @@
 #   ./deploy.sh --public             直接把 8820 绑到 0.0.0.0（明文 HTTP，仅限可信内网）
 #   ./deploy.sh --apparmor           Ubuntu 24.04+ 限制非特权 userns 时加载专用 AppArmor 配置
 #   ./deploy.sh down                 停止（浏览器会先正常关闭，数据卷保留）
+#   ./deploy.sh fpeval               指纹验收：两个临时 profile 的生效/自洽/稳定/区分度判定
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -14,8 +15,8 @@ while [ $# -gt 0 ]; do
         --domain) DOMAIN_ARG="${2:?--domain 需要域名}"; shift 2 ;;
         --public) PUBLIC=1; shift ;;
         --apparmor) APPARMOR=1; shift ;;
-        down|logs|status) ACTION="$1"; shift ;;
-        -h|--help) sed -n '2,8p' "$0"; exit 0 ;;
+        down|logs|status|fpeval) ACTION="$1"; shift ;;
+        -h|--help) sed -n '2,9p' "$0"; exit 0 ;;
         *) echo "未知参数：$1" >&2; exit 2 ;;
     esac
 done
@@ -58,6 +59,7 @@ case "$ACTION" in
     down) compose down; exit 0 ;;
     logs) compose logs -f --tail=200; exit 0 ;;
     status) compose ps; exit 0 ;;
+    fpeval) compose exec -T manager python3 -m chromix.manager.fpeval "$@"; exit $? ;;
 esac
 
 if [ "$(get_env CHROMIX_MANAGER_TOKEN)" = "change-me-to-a-long-random-string" ]; then
@@ -109,5 +111,5 @@ cat <<EOF
   访问令牌：$TOKEN   （界面里输入；程序请求头 X-Chromix-Token）
   CDP 网关：启动 profile 后返回的 cdp_remote 字段，形如 ${BASE%% *}/cdp/<id>（ws/wss）
   数据卷：  chromix_chromix-data（profile、登录态、日志）
-  常用命令：./deploy.sh status | logs | down
+  常用命令：./deploy.sh status | logs | down | fpeval（指纹验收）
 EOF
